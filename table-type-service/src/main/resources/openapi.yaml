@@ -1,0 +1,659 @@
+openapi: 3.0.3
+info:
+  title: Table Type API
+  version: 1.0.0
+  description: APIs for managing table types
+tags:
+  - name: Table Types
+    description: APIs for managing table types
+paths:
+  /table-type/list:
+    get:
+      summary: Get list table types
+      description: |
+        Retrieves list of table types with filtering and sorting capabilities.
+
+        **Features**:
+        - Keyword search on table type names
+        - Custom sorting on id, name
+        - Standardized response format
+      operationId: getAll
+      tags:
+        - Table Types
+      parameters:
+        - name: keyword
+          in: query
+          description: Keyword to filter categories by name
+          required: false
+          schema:
+            type: string
+          example: Bàn 4 người
+        - name: capacity
+          in: query
+          description: Capacity of the table type
+          required: false
+          schema:
+            type: integer
+          example: 5
+      responses:
+        '200':
+          description: Successfully retrieved table types
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                message: Success
+                data:
+                  - id: 1
+                    name: Bàn đôi
+                    description: Bàn dành cho 2 người
+                    capacity: 2
+                  - id: 2
+                    name: Bàn nhóm
+                    description: Bàn dành cho nhóm nhỏ
+                    capacity: 5
+                  - id: 3
+                    name: Bàn gia đình
+                    description: Bàn dành cho gia đình
+                    capacity: 6
+                  - id: 6
+                    name: Bàn đơn
+                    description: null
+                    capacity: 6
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: BAD_REQUEST
+                message: "Parameter 'capacity' is of invalid type. Expected type: int."
+                messageFields: null
+        '404':
+          description: No static resources found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NOT_FOUND
+                message: "No static resource api/v1/table-types1."
+                messageFields: null
+        '405':
+          description: HTTP method not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: HTTP_METHOD_NOT_ALLOWED
+                message: "HTTP method not supported: PUT"
+                messageFields: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                messageFields: null
+  /table-type/page:
+    get:
+      summary: Get paginated table types
+      description: |
+        Retrieves paginated list of table types with filtering and sorting capabilities.
+
+        **Features**:
+        - Keyword search on table type names
+        - Custom sorting on id, name
+        - Configurable pagination
+        - Standardized response format
+      operationId: getAllPage
+      tags:
+        - Table Types
+      parameters:
+        - name: keyword
+          in: query
+          description: Keyword to filter categories by name
+          required: false
+          schema:
+            type: string
+          example: Bàn 4 người
+        - name: capacity
+          in: query
+          description: Capacity of the table type
+          required: false
+          schema:
+            type: integer
+          example: 5
+        - name: page
+          in: query
+          description: Page number (1-based)
+          required: false
+          schema:
+            type: integer
+            default: 1
+          example: 1
+        - name: size
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            default: 10
+          example: 10
+        - name: sortBy
+          in: query
+          description: Field to sort by
+          required: false
+          schema:
+            type: string
+            default: id
+            enum:
+              - id
+              - name
+              - capacity
+              - createdAt
+              - updatedAt
+        - name: sortDir
+          in: query
+          description: Sort direction
+          required: false
+          schema:
+            type: string
+            default: asc
+            enum:
+              - asc
+              - desc
+      responses:
+        '200':
+          description: Successfully retrieved table types
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                message: Success
+                data:
+                  content:
+                    - id: 1
+                      name: Bàn đôi
+                      description: Bàn dành cho 2 người
+                      capacity: 2
+                    - id: 2
+                      name: Bàn nhóm
+                      description: Bàn dành cho nhóm nhỏ
+                      capacity: 5
+                  pageNumber: 1
+                  pageSize: 2
+                  totalElements: 4
+                  totalPages: 2
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: BAD_REQUEST
+                message: "Parameter 'capacity' is of invalid type. Expected type: int."
+                messageFields: null
+        '404':
+          description: No static resources found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NOT_FOUND
+                message: "No static resource api/v1/table-types1."
+                messageFields: null
+        '405':
+          description: HTTP method not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: HTTP_METHOD_NOT_ALLOWED
+                message: "HTTP method not supported: PUT"
+                messageFields: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                messageFields: null
+  /table-type/create:
+    post:
+      summary: Create a new table type
+      description: Adds a new table type to the system. Requires unique type name.
+      operationId: create
+      tags:
+        - Table Types
+      security:
+        - bearerAuth: [] # Yêu cầu Bearer Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TableTypeRequest'
+      responses:
+        '201':
+          description: Create table type successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                message: Success
+                data:
+                  id: 8
+                  name: Bàn gia đình 2
+                  description: Bàn dành cho gia đình
+                  capacity: 6
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: VALIDATION_ERROR
+                message: "Validation failed for one or more fields."
+                messageFields:
+                  name: Name is required
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: UNAUTHORIZED
+                message: Invalid or missing token
+                messageFields: null
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: FORBIDDEN
+                message: Insufficient permissions
+                messageFields: null
+        '404':
+          description: No static resources found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NOT_FOUND
+                message: "No static resource api/v1/table-types1."
+                messageFields: null
+        '405':
+          description: HTTP method not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: HTTP_METHOD_NOT_ALLOWED
+                message: "HTTP method not supported: PUT"
+                messageFields: null
+        '409':
+          description: Table type name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: CONFLICT_ERROR
+                message: Table type name already exists
+                messageFields: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                messageFields: null
+  /table-type/update/{id}:
+    put:
+      summary: Updates an existing table type with id
+      description: Updates an existing table type in the system. Requires unique type name.
+      operationId: update
+      tags:
+        - Table Types
+      security:
+        - bearerAuth: [] # Yêu cầu Bearer Token
+      parameters:
+        - name: id
+          in: path
+          description: ID of the table type to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TableTypeRequest'
+      responses:
+        '200':
+          description: Successfully executed the operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                message: Success
+                data:
+                  id: 8
+                  name: Bàn gia đình 2
+                  description: Bàn dành cho gia đình
+                  capacity: 6
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: VALIDATION_ERROR
+                message: "Validation failed for one or more fields."
+                messageFields:
+                  name: Name is required
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: UNAUTHORIZED
+                message: Invalid or missing token
+                messageFields: null
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: FORBIDDEN
+                message: Insufficient permissions
+                messageFields: null
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NOT_FOUND
+                message: Table type not exist
+                messageFields: null
+        '405':
+          description: HTTP method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: HTTP_METHOD_NOT_ALLOWED
+                message: "HTTP method not supported: PUT"
+                messageFields: null
+        '409':
+          description: Table type name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: CONFLICT_ERROR
+                message: Table type name already exists
+                messageFields: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                messageFields: null
+  /table-type/delete/{id}:
+    delete:
+      summary: Deletes an existing table type with id
+      description: Deletes an existing table type in the system
+      operationId: delete
+      tags:
+        - Table Types
+      security:
+        - bearerAuth: [] # Yêu cầu Bearer Token
+      parameters:
+        - name: id
+          in: path
+          description: ID of the table type to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '204':
+          description: Permanently removes a table type by its ID. Returns 204 No Content on success.
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: UNAUTHORIZED
+                message: Invalid or missing token
+                messageFields: null
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: FORBIDDEN
+                message: Insufficient permissions
+                messageFields: null
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NOT_FOUND
+                message: Table type not exist
+                messageFields: null
+        '405':
+          description: HTTP method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: HTTP_METHOD_NOT_ALLOWED
+                message: "HTTP method not supported: PUT"
+                messageFields: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                messageFields: null
+  /table-type/{id}:
+    get:
+      summary: Get detail table type with id
+      description: Get detail an existing table type in the system
+      operationId: getDetail
+      tags:
+        - Table Types
+      parameters:
+        - name: id
+          in: path
+          description: ID of the table type to get detail
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '200':
+          description: Successfully executed the operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                message: Success
+                data:
+                  id: 8
+                  name: Bàn gia đình 2
+                  description: Bàn dành cho gia đình
+                  capacity: 6
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NOT_FOUND
+                message: Table type not exist
+                messageFields: null
+        '405':
+          description: HTTP method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: HTTP_METHOD_NOT_ALLOWED
+                message: "HTTP method not supported: PUT"
+                messageFields: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                messageFields: null
+components:
+  schemas:
+    TableTypeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        capacity:
+          type: integer
+      required:
+        - name
+        - capacity
+    TableTypeResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        capacity:
+          type: integer
+      required:
+        - id
+        - name
+        - capacity
+    ApiResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          oneOf:
+            - type: array
+              items:
+                $ref: '#/components/schemas/TableTypeResponse'
+            - $ref: '#/components/schemas/TableTypeResponse'
+            - $ref: '#/components/schemas/CustomPageResponse'
+      required:
+        - message
+    CustomPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/TableTypeResponse'
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+      required:
+        - content
+        - pageNumber
+        - pageSize
+        - totalElements
+        - totalPages
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        messageFields:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - error
+        - message
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

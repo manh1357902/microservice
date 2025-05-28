@@ -1,0 +1,98 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          # Discovery Service
+          - id: discovery-service
+            uri: lb://discovery-service
+            predicates:
+              - Path=/discovery/**
+            filters:
+              - StripPrefix=1
+
+          # Table Service
+          - id: table-service
+            uri: lb://table-service
+            predicates:
+              - Path=/table/**
+            filters:
+              - RewritePath=/table/(?<remaining>.*), /api/v1/restaurant-tables/${remaining}
+
+          # Table Service API Docs
+          - id: table-service-api-docs
+            uri: lb://table-service
+            predicates:
+              - Path=/tables/v3/api-docs/**
+            filters:
+              - StripPrefix=1
+
+          # Table Service Swagger UI
+          - id: table-service-swagger
+            uri: lb://table-service
+            predicates:
+              - Path=/tables/swagger-ui/**
+            filters:
+              - StripPrefix=1
+
+          # Table Type Service
+          - id: table-type-service
+            uri: lb://table-type-service
+            predicates:
+              - Path=/table-type/**
+            filters:
+              - RewritePath=/table-type/(?<remaining>.*), /api/v1/table-types/${remaining}
+
+          # Table Type Service API Docs
+          - id: table-type-service-api-docs
+            uri: lb://table-type-service
+            predicates:
+              - Path=/table-types/v3/api-docs/**
+            filters:
+              - StripPrefix=1
+
+          # Table Type Service Swagger UI
+          - id: table-type-service-swagger
+            uri: lb://table-type-service
+            predicates:
+              - Path=/table-types/swagger-ui/**
+            filters:
+              - StripPrefix=1
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: table-service
+        url: /tables/v3/api-docs
+      - name: table-type-service
+        url: /table-types/v3/api-docs
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  cache:
+    disabled: true
+  paths-to-exclude: /api/v1/auth/**

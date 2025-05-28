@@ -1,0 +1,653 @@
+openapi: 3.0.3
+info:
+  title: Restaurant Table API
+  version: 1.0.0
+  description: APIs for managing restaurant tables
+tags:
+  - name: Restaurant Tables
+    description: APIs for managing restaurant tables
+paths:
+  /table/page:
+    get:
+      summary: Get paginated restaurant tables
+      description: |
+        Retrieves paginated list of restaurant tables with filtering and sorting capabilities.
+        
+        **Features**:
+        - Filter by table number, table type, price range, status
+        - Custom sorting on id, number, price, createdAt, updatedAt
+        - Configurable pagination
+        - Standardized response format
+      operationId: getAll
+      tags:
+        - Restaurant Tables
+      parameters:
+        - name: number
+          in: query
+          description: Table number (must be greater than 0)
+          required: false
+          schema:
+            type: integer
+          example: 5
+        - name: tableTypeId
+          in: query
+          description: ID of the table type
+          required: false
+          schema:
+            type: integer
+            format: int64
+          example: 1
+        - name: minPrice
+          in: query
+          description: Minimum price filter
+          required: false
+          schema:
+            type: number
+            format: bigdecimal
+          example: 50000
+        - name: maxPrice
+          in: query
+          description: Maximum price filter
+          required: false
+          schema:
+            type: number
+            format: bigdecimal
+          example: 200000
+        - name: status
+          in: query
+          description: Status of the table (e.g., AVAILABLE, OCCUPIED, RESERVED, CLEANING)
+          required: false
+          schema:
+            type: string
+            enum:
+              - AVAILABLE
+              - OCCUPIED
+              - RESERVED
+              - CLEANING
+          example: AVAILABLE
+        - name: page
+          in: query
+          description: Page number (1-based)
+          required: false
+          schema:
+            type: integer
+            default: 1
+          example: 1
+        - name: size
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            default: 10
+          example: 10
+        - name: sortBy
+          in: query
+          description: Field to sort by
+          required: false
+          schema:
+            type: string
+            default: id
+            enum:
+              - id
+              - number
+              - price
+              - createdAt
+              - updatedAt
+          example: id
+        - name: sortDir
+          in: query
+          description: Sort direction
+          required: false
+          schema:
+            type: string
+            default: asc
+            enum:
+              - asc
+              - asc
+          example: asc
+      responses:
+        '200':
+          description: Successfully retrieved restaurant tables
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                message: Success
+                data:
+                  content:
+                    - id: 1
+                      number: 5
+                      tableTypeId: 1
+                      price: 100000
+                      status: AVAILABLE
+                      createdAt: "2025-05-08T15:03:00Z"
+                      updatedAt: "2025-05-08T15:03:00Z"
+                  pageNumber: 1
+                  pageSize: 10
+                  totalElements: 1
+                  totalPages: 1
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: BAD_REQUEST
+                message: "Parameter 'page' is of invalid type. Expected type: int."
+                messageFields: null
+        '404':
+          description: No static resources found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NOT_FOUND
+                message: "No static resource api/v1/restaurant-tables1."
+                messageFields: null
+        '405':
+          description: HTTP method not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: HTTP_METHOD_NOT_ALLOWED
+                message: "HTTP method not supported: PUT"
+                messageFields: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                messageFields: null
+  /table/{id}:
+    get:
+      summary: Get restaurant table details
+      description: Retrieves complete information of a specific restaurant table by its ID.
+      operationId: getDetail
+      tags:
+        - Restaurant Tables
+      parameters:
+        - name: id
+          in: path
+          description: ID of the restaurant table
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '200':
+          description: Successfully retrieved restaurant table
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                message: Success
+                data:
+                  id: 1
+                  number: 5
+                  tableTypeId: 8
+                  price: 100000
+                  status: AVAILABLE
+                  createdAt: "2025-05-08T15:00:00Z"
+                  updatedAt: "2025-05-08T15:00:00Z"
+        '404':
+          description: Restaurant table not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NOT_FOUND
+                message: Restaurant table not found
+                messageFields: null
+        '405':
+          description: HTTP method not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: HTTP_METHOD_NOT_ALLOWED
+                message: "HTTP method not supported: PUT"
+                messageFields: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                messageFields: null
+  /table/create:
+    post:
+      summary: Create a new restaurant table
+      description: Create a new restaurant table with the provided details.
+      operationId: create
+      tags:
+        - Restaurant Tables
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestaurantTableRequest'
+      responses:
+        '201':
+          description: Successfully created restaurant table
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                message: Success
+                data:
+                  id: 10
+                  number: 8
+                  tableTypeId: 2
+                  price: 120000
+                  status: AVAILABLE
+                  createdAt: "2025-05-13T01:02:00Z"
+                  updatedAt: null
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: VALIDATION_ERROR
+                message: "Validation failed for one or more fields."
+                messageFields:
+                  tableTypeId: "Table type is required"
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: UNAUTHORIZED
+                message: Invalid or missing token
+                messageFields: null
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: FORBIDDEN
+                message: Insufficient permissions
+                messageFields: null
+        '404':
+          description: Table type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NOT_FOUND
+                message: Table type not exist
+                messageFields: null
+        '405':
+          description: HTTP method not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: HTTP_METHOD_NOT_ALLOWED
+                message: "HTTP method not supported: PUT"
+                messageFields: null
+        '409':
+          description: A restaurant table with this number already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: CONFLICT_ERROR
+                message: A restaurant table with this number already exists.
+                messageFields: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                messageFields: null
+  /table/update/{id}:
+    put:
+      summary: Update an existing restaurant table
+      description: Updates an existing restaurant table in the system.
+      operationId: update
+      tags:
+        - Restaurant Tables
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: ID of the restaurant table to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestaurantTableRequest'
+      responses:
+        '200':
+          description: Successfully updated restaurant table
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                message: Success
+                data:
+                  id: 2
+                  number: 2
+                  tableTypeId : 2
+                  price: 100000
+                  status: AVAILABLE
+                  createdAt: "2025-05-13T01:05:00Z"
+                  updatedAt: "2025-05-13T01:05:00Z"
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: VALIDATION_ERROR
+                message: "Validation failed for one or more fields."
+                messageFields:
+                  tableTypeId: "Table type is required"
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: UNAUTHORIZED
+                message: Invalid or missing token
+                messageFields: null
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: FORBIDDEN
+                message: Insufficient permissions
+                messageFields: null
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NOT_FOUND
+                message: Restaurant table not found or Table type not found.
+                messageFields: null
+        '405':
+          description: HTTP method not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: HTTP_METHOD_NOT_ALLOWED
+                message: "HTTP method not supported: PUT"
+                messageFields: null
+        '409':
+          description: A restaurant table with this number already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: CONFLICT_ERROR
+                message: A restaurant table with this number already exists.
+                messageFields: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                messageFields: null
+  /table/delete/{id}:
+    delete:
+      summary: Deletes an existing restaurant table with id
+      description: Deletes an existing restaurant table in the system
+      operationId: delete
+      tags:
+        - Restaurant Tables
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: ID of the restaurant table to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '204':
+          description: Permanently removes a restaurant table by its ID. Returns 204 No Content on success.
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: UNAUTHORIZED
+                message: Invalid or missing token
+                messageFields: null
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: FORBIDDEN
+                message: Insufficient permissions
+                messageFields: null
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NOT_FOUND
+                message: Restaurant table not found
+                messageFields: null
+        '405':
+          description: HTTP method not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: HTTP_METHOD_NOT_ALLOWED
+                message: "HTTP method not supported: PUT"
+                messageFields: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                messageFields: null
+components:
+  schemas:
+    RestaurantTableRequest:
+      type: object
+      properties:
+        number:
+          type: integer
+          description: Table number (must be greater than 0)
+        tableTypeId:
+          type: integer
+          format: int64
+          description: ID of the table type
+        price:
+          type: number
+          format: bigdecimal
+          description: Price of the table
+        status:
+          type: string
+          enum:
+            - AVAILABLE
+            - OCCUPIED
+            - RESERVED
+            - CLEANING
+          description: Status of the table
+      required:
+        - number
+        - tableTypeId
+        - price
+        - status
+    RestaurantTableResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID of the restaurant table
+        number:
+          type: integer
+          description: Table number
+        tableTypeId:
+          type: integer
+          format: int64
+          description: Id of Table type details
+        price:
+          type: number
+          format: bigdecimal
+          description: Price of the table
+        status:
+          type: string
+          enum:
+            - AVAILABLE
+            - OCCUPIED
+            - RESERVED
+            - CLEANING
+          description: Status of the table
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          nullable: true
+      required:
+        - id
+        - number
+        - tableTypeId
+        - price
+        - status
+        - createdAt
+    ApiResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Response message
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/RestaurantTableResponse'
+            - $ref: '#/components/schemas/CustomPageResponse'
+          description: Response data
+      required:
+        - message
+    CustomPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestaurantTableResponse'
+          description: List of restaurant tables
+        pageNumber:
+          type: integer
+          description: Current page number
+        pageSize:
+          type: integer
+          description: Number of items per page
+        totalElements:
+          type: integer
+          format: int64
+          description: Total number of items
+        totalPages:
+          type: integer
+          description: Total number of pages
+      required:
+        - content
+        - pageNumber
+        - pageSize
+        - totalElements
+        - totalPages
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Error message
+        messageFields:
+          type: object
+          additionalProperties:
+            type: string
+          description: Field-specific error messages
+          nullable: true
+      required:
+        - error
+        - message
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
