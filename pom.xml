@@ -14,7 +14,6 @@
     <modules>
         <module>discovery-service</module>
         <module>api-gateway</module>
-        <module>auth-service</module>
         <module>table-service</module>
         <module>table-type-service</module>
     </modules>

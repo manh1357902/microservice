@@ -7,7 +7,7 @@ tags:
   - name: Authentication
     description: Endpoints for login and token refresh
 paths:
-  /auth/login:
+  /api/v1/auth/login:
     post:
       summary: Authenticate user and return tokens
       operationId: login
@@ -65,7 +65,7 @@ paths:
             application/json:
               schema:
                 type: object
-  /auth/refresh-token:
+  /api/v1/auth/refresh-token:
     post:
       summary: Refresh access token using refresh token
       operationId: refreshToken
